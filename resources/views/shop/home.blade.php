@@ -5,13 +5,13 @@
     <section class="bg-paper">
         <div class="max-w-6xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-10 items-center">
             <div>
-                <span class="inline-block text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="background:#fff;color:var(--bp-primary)">Pensé pour les e-commerçants</span>
+                <span class="inline-block text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="background:#fff;color:var(--bp-primary)">Emballages sur-mesure & prêts à vendre</span>
                 <h1 class="font-display text-4xl md:text-5xl font-extrabold mt-4 leading-tight">
-                    Votre marque,<br><span style="color:var(--bp-accent)">bien emballée.</span>
+                    Tous vos emballages,<br><span style="color:var(--bp-accent)">bien pensés.</span>
                 </h1>
                 <p class="mt-4 text-lg text-gray-600">
-                    Boîtes en carton, boîtes en papier et sacs personnalisés à votre logo.
-                    Configurez, importez votre design et commandez en quelques clics. Paiement à la livraison.
+                    Boîtes pâtisserie et gâteaux, emballages restauration, caisses e-commerce, sacs, rubans…
+                    Personnalisez à votre marque ou commandez nos produits standards. Paiement à la livraison.
                 </p>
                 <div class="mt-6 flex gap-3">
                     <a href="#familles" class="px-6 py-3 rounded-lg text-white font-semibold" style="background:var(--bp-accent)">Commander maintenant</a>

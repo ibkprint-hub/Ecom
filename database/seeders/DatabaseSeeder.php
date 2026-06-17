@@ -58,27 +58,61 @@ class DatabaseSeeder extends Seeder
 
     private function seedCatalog(): void
     {
+        // Valeurs par défaut d'un produit (surchargées par produit).
+        $defaults = [
+            'featured' => false, 'customizable' => true, 'mode' => 'unit', 'unit_label' => null,
+            'min' => 1, 'step' => 1, 'pack_size' => null, 'design_price' => 3000,
+            'dims' => true, 'options' => true,
+        ];
+
         $families = [
             [
-                'name' => 'Boîtes en carton',
-                'description' => 'Caisses et boîtes carton personnalisées pour l\'expédition e-commerce et l\'unboxing.',
+                'name' => 'Boîtes pâtisserie & gâteaux',
+                'description' => 'Boîtes à gâteaux, pâtisseries et boîtes de gâteaux de mariage, à votre image.',
                 'products' => [
-                    ['name' => 'Mailer e-commerce', 'short' => 'La boîte d\'expédition à votre marque.', 'tiers' => [50 => 120, 100 => 95, 250 => 78, 500 => 62, 1000 => 49]],
-                    ['name' => 'Caisse américaine', 'short' => 'Robuste, idéale pour le transport en volume.', 'tiers' => [50 => 140, 100 => 110, 250 => 90, 500 => 72, 1000 => 58]],
+                    ['name' => 'Boîte à gâteau', 'short' => 'Pour pâtisseries et boutiques.', 'featured' => true, 'min' => 50, 'step' => 25, 'tiers' => [50 => 95, 100 => 78, 250 => 62, 500 => 50]],
+                    ['name' => 'Boîte gâteau de mariage', 'short' => 'Présentation premium pour les grandes occasions.', 'min' => 25, 'step' => 25, 'tiers' => [25 => 180, 50 => 150, 100 => 125, 250 => 100]],
                 ],
             ],
             [
-                'name' => 'Boîtes en papier',
-                'description' => 'Boîtes et étuis papier premium pour cosmétique, food et cadeaux.',
+                'name' => 'Emballages restauration & fast-food',
+                'description' => 'Boîtes burger, barquettes et emballages pour restaurants et fast-foods.',
                 'products' => [
-                    ['name' => 'Boîte cadeau à rabat', 'short' => 'Finition premium pour un unboxing mémorable.', 'tiers' => [50 => 160, 100 => 130, 250 => 105, 500 => 85, 1000 => 70]],
+                    ['name' => 'Boîte burger', 'short' => 'Solide et anti-gras, à votre logo.', 'featured' => true, 'min' => 100, 'step' => 50, 'tiers' => [100 => 45, 250 => 36, 500 => 29, 1000 => 23]],
+                    ['name' => 'Barquette frites', 'short' => 'Format pratique pour la vente à emporter.', 'min' => 100, 'step' => 50, 'tiers' => [100 => 22, 250 => 17, 500 => 13, 1000 => 10]],
                 ],
             ],
             [
-                'name' => 'Sacs en plastique',
-                'description' => 'Sacs et pochettes plastique personnalisés pour la livraison.',
+                'name' => 'Boîtes & caisses carton',
+                'description' => 'Caisses et boîtes d\'expédition pour le e-commerce et l\'unboxing.',
                 'products' => [
-                    ['name' => 'Pochette d\'expédition', 'short' => 'Légère, étanche, à votre logo.', 'tiers' => [100 => 35, 250 => 28, 500 => 22, 1000 => 17, 2000 => 13]],
+                    ['name' => 'Mailer e-commerce', 'short' => 'La boîte d\'expédition à votre marque.', 'featured' => true, 'min' => 50, 'step' => 50, 'tiers' => [50 => 120, 100 => 95, 250 => 78, 500 => 62, 1000 => 49]],
+                    ['name' => 'Caisse américaine', 'short' => 'Robuste, idéale pour le transport en volume.', 'min' => 50, 'step' => 50, 'tiers' => [50 => 140, 100 => 110, 250 => 90, 500 => 72, 1000 => 58]],
+                ],
+            ],
+            [
+                'name' => 'Sacs & pochettes',
+                'description' => 'Sacs kraft, sacs et pochettes personnalisés pour la livraison et la boutique.',
+                'products' => [
+                    ['name' => 'Sac kraft à poignées', 'short' => 'Élégant pour boutiques et take-away.', 'min' => 100, 'step' => 50, 'tiers' => [100 => 55, 250 => 44, 500 => 35, 1000 => 28]],
+                    ['name' => 'Pochette d\'expédition', 'short' => 'Légère, étanche, à votre logo.', 'min' => 100, 'step' => 100, 'tiers' => [100 => 35, 250 => 28, 500 => 22, 1000 => 17, 2000 => 13]],
+                ],
+            ],
+            [
+                'name' => 'Rubans & films',
+                'description' => 'Rubans personnalisés vendus au mètre pour l\'emballage cadeau.',
+                'products' => [
+                    // Vendu AU MÈTRE, sans dimensions, impression simple.
+                    ['name' => 'Ruban personnalisé', 'short' => 'Imprimé à votre marque, vendu au mètre.', 'mode' => 'meter', 'unit_label' => 'mètre', 'min' => 50, 'step' => 10, 'dims' => false, 'tiers' => [50 => 40, 100 => 32, 250 => 26, 500 => 21]],
+                ],
+            ],
+            [
+                'name' => 'Accessoires (prêts à vendre)',
+                'description' => 'Produits standards vendus en pack, sans personnalisation.',
+                'products' => [
+                    // Vendu EN PACK et NON personnalisable.
+                    ['name' => 'Gobelets carton (pack de 50)', 'short' => 'Gobelets blancs prêts à l\'emploi.', 'customizable' => false, 'mode' => 'pack', 'pack_size' => 50, 'min' => 10, 'step' => 5, 'dims' => false, 'options' => false, 'tiers' => [10 => 180, 20 => 160, 50 => 140, 100 => 125]],
+                    ['name' => 'Serviettes blanches (pack de 100)', 'short' => 'Serviettes neutres pour la restauration.', 'customizable' => false, 'mode' => 'pack', 'pack_size' => 100, 'min' => 5, 'step' => 5, 'dims' => false, 'options' => false, 'tiers' => [5 => 90, 10 => 80, 25 => 70, 50 => 62]],
                 ],
             ],
         ];
@@ -92,56 +126,72 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]);
 
-            foreach ($f['products'] as $pIndex => $p) {
+            foreach ($f['products'] as $pIndex => $raw) {
+                $p = array_merge($defaults, $raw);
+
                 $product = Product::create([
                     'product_family_id' => $family->id,
                     'name' => $p['name'],
                     'slug' => Str::slug($p['name']),
                     'short_description' => $p['short'],
-                    'description' => 'Personnalisez ce produit avec votre design ou laissez notre équipe créer un visuel sur mesure. Tarif dégressif selon la quantité.',
-                    'allow_upload' => true,
-                    'allow_design_service' => true,
-                    'design_service_price' => 3000,
+                    'description' => $p['customizable']
+                        ? 'Personnalisez ce produit avec votre design ou laissez notre équipe créer un visuel sur mesure. Tarif dégressif selon la quantité.'
+                        : 'Produit standard prêt à vendre. Tarif dégressif selon la quantité.',
+                    'pricing_mode' => $p['mode'],
+                    'unit_label' => $p['unit_label'],
+                    'min_quantity' => $p['min'],
+                    'quantity_step' => $p['step'],
+                    'pack_size' => $p['pack_size'],
+                    'is_customizable' => $p['customizable'],
+                    'allow_upload' => $p['customizable'],
+                    'allow_design_service' => $p['customizable'],
+                    'design_service_price' => $p['design_price'],
                     'allow_custom_dimensions' => false,
-                    'is_featured' => $pIndex === 0,
+                    'is_featured' => $p['featured'],
                     'sort_order' => $pIndex,
                     'is_active' => true,
                 ]);
 
-                $dims = [
-                    ['Petit', 200, 150, 100, 1.0],
-                    ['Moyen', 300, 250, 150, 1.25],
-                    ['Grand', 400, 350, 250, 1.6],
-                ];
-                foreach ($dims as $di => [$label, $l, $w, $h, $mult]) {
-                    Dimension::create([
-                        'product_id' => $product->id,
-                        'label' => "{$label} — {$l}×{$w}×{$h} mm",
-                        'length_mm' => $l, 'width_mm' => $w, 'height_mm' => $h,
-                        'price_multiplier' => $mult,
-                        'sort_order' => $di,
-                    ]);
+                if ($p['dims']) {
+                    $dims = [
+                        ['Petit', 200, 150, 100, 1.0],
+                        ['Moyen', 300, 250, 150, 1.25],
+                        ['Grand', 400, 350, 250, 1.6],
+                    ];
+                    foreach ($dims as $di => [$label, $l, $w, $h, $mult]) {
+                        Dimension::create([
+                            'product_id' => $product->id,
+                            'label' => "{$label} — {$l}×{$w}×{$h} mm",
+                            'length_mm' => $l, 'width_mm' => $w, 'height_mm' => $h,
+                            'price_multiplier' => $mult,
+                            'sort_order' => $di,
+                        ]);
+                    }
                 }
 
-                foreach ($p['tiers'] as $minQty => $unit) {
+                foreach ($p['tiers'] as $minQty => $unitPrice) {
                     PriceTier::create([
                         'product_id' => $product->id,
                         'min_quantity' => $minQty,
-                        'unit_price' => $unit,
+                        'unit_price' => $unitPrice,
                     ]);
                 }
 
-                $print = OptionGroup::create([
-                    'product_id' => $product->id, 'name' => 'Impression', 'is_required' => true, 'sort_order' => 0,
-                ]);
-                Option::create(['option_group_id' => $print->id, 'label' => '1 couleur', 'price_delta' => 0, 'sort_order' => 0]);
-                Option::create(['option_group_id' => $print->id, 'label' => 'Quadri (CMJN)', 'price_delta' => 12, 'sort_order' => 1]);
+                if ($p['options']) {
+                    $print = OptionGroup::create([
+                        'product_id' => $product->id, 'name' => 'Impression', 'is_required' => true, 'sort_order' => 0,
+                    ]);
+                    Option::create(['option_group_id' => $print->id, 'label' => '1 couleur', 'price_delta' => 0, 'sort_order' => 0]);
+                    Option::create(['option_group_id' => $print->id, 'label' => 'Quadri (CMJN)', 'price_delta' => 12, 'sort_order' => 1]);
 
-                $finish = OptionGroup::create([
-                    'product_id' => $product->id, 'name' => 'Finition', 'is_required' => true, 'sort_order' => 1,
-                ]);
-                Option::create(['option_group_id' => $finish->id, 'label' => 'Mate', 'price_delta' => 0, 'sort_order' => 0]);
-                Option::create(['option_group_id' => $finish->id, 'label' => 'Brillante (pelliculage)', 'price_delta' => 8, 'sort_order' => 1]);
+                    if ($p['dims']) {
+                        $finish = OptionGroup::create([
+                            'product_id' => $product->id, 'name' => 'Finition', 'is_required' => true, 'sort_order' => 1,
+                        ]);
+                        Option::create(['option_group_id' => $finish->id, 'label' => 'Mate', 'price_delta' => 0, 'sort_order' => 0]);
+                        Option::create(['option_group_id' => $finish->id, 'label' => 'Brillante (pelliculage)', 'price_delta' => 8, 'sort_order' => 1]);
+                    }
+                }
             }
         }
     }

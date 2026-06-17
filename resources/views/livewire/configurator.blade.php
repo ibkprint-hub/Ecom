@@ -2,14 +2,14 @@
 <div class="grid lg:grid-cols-3 gap-8">
     {{-- Colonne configuration --}}
     <div class="lg:col-span-2">
-        {{-- Stepper --}}
+        {{-- Stepper (dynamique : l'étape Design disparaît pour un produit non personnalisable) --}}
+        @php($labels = $this->stepLabels())
         <ol class="flex items-center gap-2 mb-8 text-sm">
-            @foreach(['Dimension','Design','Quantité','Coordonnées'] as $i => $label)
-                @php($n = $i + 1)
+            @foreach($this->activeSteps as $i => $n)
                 <li class="flex items-center gap-2">
                     <span class="h-7 w-7 rounded-full flex items-center justify-center font-semibold {{ $step >= $n ? 'text-white' : 'bg-gray-100 text-gray-500' }}"
-                          @style(['background: var(--bp-accent)' => $step >= $n])>{{ $n }}</span>
-                    <span class="{{ $step === $n ? 'font-semibold' : 'text-gray-500' }} hidden sm:inline">{{ $label }}</span>
+                          @style(['background: var(--bp-accent)' => $step >= $n])>{{ $i + 1 }}</span>
+                    <span class="{{ $step === $n ? 'font-semibold' : 'text-gray-500' }} hidden sm:inline">{{ $labels[$n] }}</span>
                     @if(! $loop->last)<span class="w-6 h-px bg-gray-200"></span>@endif
                 </li>
             @endforeach
@@ -17,7 +17,7 @@
 
         {{-- Étape 1 : Dimension --}}
         @if($step === 1)
-            <h2 class="font-display text-xl font-bold mb-4">1. Choisissez une dimension</h2>
+            <h2 class="font-display text-xl font-bold mb-4">Choisissez une dimension</h2>
             <div class="grid sm:grid-cols-2 gap-3">
                 @foreach($product->dimensions->where('is_active', true) as $dim)
                     <label class="border rounded-xl p-4 cursor-pointer flex items-start gap-3 {{ $dimensionId === $dim->id ? 'border-kraft-600 ring-2 ring-kraft-100' : 'border-gray-200' }}">
@@ -34,7 +34,7 @@
 
         {{-- Étape 2 : Design --}}
         @if($step === 2)
-            <h2 class="font-display text-xl font-bold mb-4">2. Votre design</h2>
+            <h2 class="font-display text-xl font-bold mb-4">Votre design</h2>
             <div class="grid sm:grid-cols-2 gap-3 mb-5">
                 @if($product->allow_upload)
                     <label class="border rounded-xl p-4 cursor-pointer {{ $designMode === 'upload' ? 'border-kraft-600 ring-2 ring-kraft-100' : 'border-gray-200' }}">
@@ -67,44 +67,40 @@
             @endif
 
             {{-- Options --}}
-            @if($product->optionGroups->isNotEmpty())
-                <div class="mt-6 space-y-4">
-                    @foreach($product->optionGroups as $group)
-                        <div>
-                            <h3 class="font-medium mb-2">{{ $group->name }}</h3>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($group->options->where('is_active', true) as $opt)
-                                    <label class="border rounded-lg px-3 py-2 text-sm cursor-pointer {{ ($selectedOptions[$group->id] ?? null) === $opt->id ? 'border-kraft-600 bg-kraft-50' : 'border-gray-200' }}">
-                                        <input type="radio" class="hidden" wire:model.live="selectedOptions.{{ $group->id }}" value="{{ $opt->id }}">
-                                        {{ $opt->label }}@if($opt->price_delta > 0) <span class="text-gray-400">+{{ number_format($opt->price_delta,0,',',' ') }}</span>@endif
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+            @include('livewire.partials.options')
         @endif
 
         {{-- Étape 3 : Quantité --}}
         @if($step === 3)
-            <h2 class="font-display text-xl font-bold mb-4">3. Quantité</h2>
+            @php($unit = $this->quote['unit_label'])
+            {{-- Options affichées ici pour les produits non personnalisables (pas d'étape design) --}}
+            @unless($product->is_customizable)
+                @include('livewire.partials.options')
+                <div class="mb-6"></div>
+            @endunless
+            <h2 class="font-display text-xl font-bold mb-4">Quantité <span class="text-gray-400 font-normal text-base">(en {{ $unit }}s)</span></h2>
             <div class="flex flex-wrap gap-2 mb-4">
                 @foreach($product->priceTiers as $tier)
                     <button type="button" wire:click="$set('quantity', {{ $tier->min_quantity }})"
                             class="border rounded-lg px-4 py-2 text-sm {{ (int)$quantity === (int)$tier->min_quantity ? 'border-kraft-600 bg-kraft-50' : 'border-gray-200' }}">
-                        {{ $tier->min_quantity }} pcs
+                        {{ $tier->min_quantity }} {{ $unit }}{{ $tier->min_quantity > 1 ? 's' : '' }}
                     </button>
                 @endforeach
             </div>
-            <label class="text-sm text-gray-600">Quantité personnalisée</label>
-            <input type="number" min="1" wire:model.live="quantity" class="block w-40 border border-gray-200 rounded-lg p-2 mt-1">
-            <p class="text-sm text-gray-500 mt-3">Prix unitaire actuel : <strong>{{ number_format($this->quote['unit_price'],2,',',' ') }} {{ $cur }}</strong></p>
+            <label class="text-sm text-gray-600">Quantité personnalisée (en {{ $unit }}s)</label>
+            <input type="number" min="{{ $product->minQuantity() }}" step="{{ $product->quantityStep() }}"
+                   wire:model.blur="quantity" class="block w-40 border border-gray-200 rounded-lg p-2 mt-1">
+            <p class="text-xs text-gray-400 mt-1">
+                Minimum {{ $product->minQuantity() }} {{ $unit }}{{ $product->minQuantity() > 1 ? 's' : '' }}
+                @if($product->quantityStep() > 1) · par multiples de {{ $product->quantityStep() }} @endif
+                @if($product->pricing_mode === 'pack' && $product->pack_size) · 1 pack = {{ $product->pack_size }} pièces @endif
+            </p>
+            <p class="text-sm text-gray-500 mt-3">Prix par {{ $unit }} : <strong>{{ number_format($this->quote['unit_price'],2,',',' ') }} {{ $cur }}</strong></p>
         @endif
 
         {{-- Étape 4 : Coordonnées --}}
         @if($step === 4)
-            <h2 class="font-display text-xl font-bold mb-4">4. Vos coordonnées (paiement à la livraison)</h2>
+            <h2 class="font-display text-xl font-bold mb-4">Vos coordonnées (paiement à la livraison)</h2>
             <div class="grid sm:grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm text-gray-600">Nom complet *</label>
@@ -177,8 +173,8 @@
             <h3 class="font-display font-bold text-lg mb-4">Votre devis</h3>
             <dl class="space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-gray-500">Produit</dt><dd class="font-medium text-right">{{ $product->name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Quantité</dt><dd class="font-medium">{{ number_format($quantity,0,',',' ') }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Prix unitaire</dt><dd class="font-medium">{{ number_format($this->quote['unit_price'],2,',',' ') }} {{ $cur }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Quantité</dt><dd class="font-medium">{{ number_format($this->quote['quantity'],0,',',' ') }} {{ $this->quote['unit_label'] }}{{ $this->quote['quantity'] > 1 ? 's' : '' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Prix / {{ $this->quote['unit_label'] }}</dt><dd class="font-medium">{{ number_format($this->quote['unit_price'],2,',',' ') }} {{ $cur }}</dd></div>
                 <div class="flex justify-between border-t border-gray-200 pt-2"><dt class="text-gray-500">Sous-total</dt><dd class="font-medium">{{ number_format($this->quote['subtotal'],2,',',' ') }} {{ $cur }}</dd></div>
                 @if($this->quote['design_fee'] > 0)
                     <div class="flex justify-between"><dt class="text-gray-500">Service design</dt><dd class="font-medium">{{ number_format($this->quote['design_fee'],2,',',' ') }} {{ $cur }}</dd></div>

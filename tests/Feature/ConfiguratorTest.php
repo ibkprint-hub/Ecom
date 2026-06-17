@@ -73,4 +73,53 @@ class ConfiguratorTest extends TestCase
 
         $this->assertDatabaseCount('orders', 0);
     }
+
+    public function test_quantity_is_clamped_to_minimum_and_step(): void
+    {
+        // Mailer : min 50, pas 50.
+        $product = Product::where('slug', 'mailer-e-commerce')->first();
+
+        $comp = Livewire::test(Configurator::class, ['product' => $product])
+            ->set('quantity', 10); // sous le minimum
+
+        $this->assertEquals(50, $comp->instance()->quote['quantity']);
+    }
+
+    public function test_meter_product_uses_meter_unit_label(): void
+    {
+        $ruban = Product::where('slug', 'ruban-personnalise')->first();
+
+        $comp = Livewire::test(Configurator::class, ['product' => $ruban]);
+        $quote = $comp->instance()->quote;
+
+        $this->assertEquals('mètre', $quote['unit_label']);
+        $this->assertEquals('meter', $quote['pricing_mode']);
+        // min 50 mètres
+        $this->assertEquals(50, $quote['quantity']);
+    }
+
+    public function test_non_customizable_product_skips_design_step(): void
+    {
+        // Gobelets : non personnalisable, en pack, sans dimensions.
+        $gobelets = Product::where('slug', 'gobelets-carton-pack-de-50')->first();
+
+        $comp = Livewire::test(Configurator::class, ['product' => $gobelets]);
+
+        // Étapes actives : ni dimension (1) ni design (2) -> commence à 3.
+        $this->assertSame([3, 4], $comp->instance()->activeSteps);
+        $this->assertEquals(3, $comp->get('step'));
+
+        $comp->set('quantity', 10)
+            ->set('wilayaCode', '16')
+            ->set('customerName', 'Client Test')
+            ->set('customerPhone', '0555000000')
+            ->set('address', 'Adresse test, Alger')
+            ->call('submit')
+            ->assertRedirect();
+
+        $item = Order::with('items')->first()->items->first();
+        $this->assertEquals('none', $item->design_mode);
+        $this->assertNull($item->design_file_path);
+        $this->assertEquals(10, $item->quantity);
+    }
 }

@@ -10,12 +10,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', $siteName) — {{ $siteName }}</title>
-    <meta name="description" content="@yield('meta_description', 'Boîtes et sacs personnalisés pour e-commerçants. Paiement à la livraison.')">
+    <meta name="description" content="@yield('meta_description', 'Emballages personnalisés et prêts à vendre : pâtisserie, restauration, e-commerce, sacs. Paiement à la livraison.')">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:title" content="@yield('title', $siteName)">
-    <meta property="og:description" content="@yield('meta_description', 'Boîtes et sacs personnalisés pour e-commerçants. Paiement à la livraison.')">
+    <meta property="og:description" content="@yield('meta_description', 'Emballages personnalisés et prêts à vendre : pâtisserie, restauration, e-commerce, sacs. Paiement à la livraison.')">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|poppins:600,700,800" rel="stylesheet">
     <style>:root { --bp-primary: {{ $primary }}; --bp-accent: {{ $accent }}; }</style>

@@ -24,7 +24,7 @@ class PricingService
         ?string $wilayaCode = null,
         string $shippingMethod = 'home'
     ): array {
-        $quantity = max(1, $quantity);
+        $quantity = $product->normalizeQuantity(max(1, $quantity));
 
         $baseUnit = $product->unitPriceForQuantity($quantity);
 
@@ -70,6 +70,8 @@ class PricingService
             'total' => $total,
             'currency' => \App\Support\Settings::currency(),
             'selected_options' => $selectedOptions,
+            'unit_label' => $product->unitLabel(),
+            'pricing_mode' => $product->pricing_mode,
         ];
     }
 

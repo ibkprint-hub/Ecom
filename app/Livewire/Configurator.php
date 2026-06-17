@@ -49,15 +49,20 @@ class Configurator extends Component
         $firstDim = $this->product->dimensions->where('is_active', true)->first();
         $this->dimensionId = $firstDim?->id;
 
-        // Quantité de départ = plus petit palier
-        $this->quantity = (int) ($this->product->priceTiers->min('min_quantity') ?? 100);
+        // Quantité de départ : plus grand entre le minimum du produit et le plus petit palier
+        $smallestTier = (int) ($this->product->priceTiers->min('min_quantity') ?? 0);
+        $this->quantity = max($this->product->minQuantity(), $smallestTier);
 
         // Options par défaut (1re option de chaque groupe)
         foreach ($this->product->optionGroups as $group) {
             $this->selectedOptions[$group->id] = $group->options->first()?->id;
         }
 
-        $this->designMode = $this->product->allow_upload ? 'upload' : 'service';
+        if (! $this->product->is_customizable) {
+            $this->designMode = 'none';
+        } else {
+            $this->designMode = $this->product->allow_upload ? 'upload' : 'service';
+        }
 
         // Pré-remplissage via query string (deep-link pub)
         if ($dim = request('dim')) {
@@ -67,13 +72,16 @@ class Configurator extends Component
             }
         }
         if ($qty = (int) request('qty')) {
-            $this->quantity = max(1, $qty);
+            $this->quantity = $this->product->normalizeQuantity($qty);
         }
         foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as $key) {
             if (request()->has($key)) {
                 $this->utm[$key] = (string) request($key);
             }
         }
+
+        // Démarrer sur la première étape réellement active.
+        $this->step = $this->activeSteps[0];
     }
 
     protected function pricing(): PricingService
@@ -101,6 +109,36 @@ class Configurator extends Component
         return ShippingRate::where('is_active', true)->orderBy('wilaya_code')->get();
     }
 
+    /** Libellés des étapes (numéro absolu => libellé). */
+    public function stepLabels(): array
+    {
+        return [1 => 'Dimension', 2 => 'Design', 3 => 'Quantité', 4 => 'Coordonnées'];
+    }
+
+    public function hasDimensions(): bool
+    {
+        return $this->product->dimensions->where('is_active', true)->isNotEmpty();
+    }
+
+    /**
+     * Étapes actives. L'étape « dimension » (1) est masquée si le produit n'a pas de dimensions ;
+     * l'étape « design » (2) est masquée pour un produit non personnalisable.
+     */
+    public function getActiveStepsProperty(): array
+    {
+        $steps = [];
+        if ($this->hasDimensions()) {
+            $steps[] = 1;
+        }
+        if ($this->product->is_customizable) {
+            $steps[] = 2;
+        }
+        $steps[] = 3;
+        $steps[] = 4;
+
+        return $steps;
+    }
+
     public function nextStep(): void
     {
         if ($this->step === 1 && ! $this->dimensionId) {
@@ -112,12 +150,27 @@ class Configurator extends Component
             return;
         }
         $this->resetErrorBag();
-        $this->step = min(4, $this->step + 1);
+
+        $steps = $this->activeSteps;
+        $i = array_search($this->step, $steps, true);
+        if ($i !== false && $i < count($steps) - 1) {
+            $this->step = $steps[$i + 1];
+        }
     }
 
     public function prevStep(): void
     {
-        $this->step = max(1, $this->step - 1);
+        $steps = $this->activeSteps;
+        $i = array_search($this->step, $steps, true);
+        if ($i !== false && $i > 0) {
+            $this->step = $steps[$i - 1];
+        }
+    }
+
+    /** Aligne la quantité saisie sur le minimum et le pas du produit. */
+    public function updatedQuantity($value): void
+    {
+        $this->quantity = $this->product->normalizeQuantity((int) $value);
     }
 
     public function submit(PricingService $pricing)
@@ -189,7 +242,7 @@ class Configurator extends Component
                 'product_name' => $this->product->name,
                 'dimension_label' => $dimension?->label,
                 'options_snapshot' => $quote['selected_options'],
-                'quantity' => (int) $this->quantity,
+                'quantity' => $quote['quantity'],
                 'unit_price' => $quote['unit_price'],
                 'line_total' => $quote['subtotal'],
                 'design_mode' => $this->designMode,
