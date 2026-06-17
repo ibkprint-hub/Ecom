@@ -11,6 +11,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', $siteName) — {{ $siteName }}</title>
     <meta name="description" content="@yield('meta_description', 'Boîtes et sacs personnalisés pour e-commerçants. Paiement à la livraison.')">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:title" content="@yield('title', $siteName)">
+    <meta property="og:description" content="@yield('meta_description', 'Boîtes et sacs personnalisés pour e-commerçants. Paiement à la livraison.')">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|poppins:600,700,800" rel="stylesheet">
     <style>:root { --bp-primary: {{ $primary }}; --bp-accent: {{ $accent }}; }</style>
@@ -22,9 +27,8 @@
 <body class="font-sans text-ink bg-white antialiased">
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white font-display font-extrabold" style="background: var(--bp-primary)">B</span>
-                <span class="font-display text-xl font-extrabold">Be<span style="color: var(--bp-accent)">Pack</span></span>
+            <a href="{{ route('home') }}">
+                <x-logo :size="34" />
             </a>
             <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
                 @foreach(\App\Models\ProductFamily::where('is_active', true)->orderBy('sort_order')->get() as $fam)
@@ -46,7 +50,7 @@
     <footer class="bg-ink text-white/80 mt-20">
         <div class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-8">
             <div>
-                <div class="font-display text-2xl font-extrabold text-white">Be<span style="color: var(--bp-accent)">Pack</span></div>
+                <x-logo :size="34" :dark="true" />
                 <p class="mt-3 text-sm">{{ \App\Support\Settings::get('tagline', 'Votre marque, bien emballée.') }}</p>
                 <p class="mt-3 text-sm">{{ \App\Support\Settings::phone() }}</p>
             </div>

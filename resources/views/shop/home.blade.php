@@ -24,7 +24,7 @@
                 </div>
             </div>
             <div class="aspect-square rounded-3xl bg-gradient-to-br from-kraft-100 to-paper flex items-center justify-center">
-                <span class="font-display text-8xl font-extrabold" style="color:var(--bp-primary)">B</span>
+                <x-brand-mark :size="180" />
             </div>
         </div>
     </section>

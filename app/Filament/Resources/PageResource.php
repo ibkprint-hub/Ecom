@@ -32,22 +32,22 @@ class PageResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
-                    ->required(),
-                Forms\Components\TextInput::make('slug')
-                    ->required(),
-                Forms\Components\Textarea::make('body')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('meta_title'),
-                Forms\Components\Textarea::make('meta_description')
-                    ->columnSpanFull(),
-                Forms\Components\Toggle::make('show_in_footer')
-                    ->required(),
-                Forms\Components\TextInput::make('sort_order')
+                    ->label('Titre')
                     ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
+                Forms\Components\TextInput::make('slug')
+                    ->required()
+                    ->unique(ignoreRecord: true),
+                Forms\Components\RichEditor::make('body')
+                    ->label('Contenu')
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('meta_title')->label('Meta titre'),
+                Forms\Components\Textarea::make('meta_description')->label('Meta description')
+                    ->columnSpanFull(),
+                Forms\Components\Toggle::make('show_in_footer')->label('Afficher dans le pied de page'),
+                Forms\Components\TextInput::make('sort_order')->label('Ordre')->numeric()->default(0),
+                Forms\Components\Toggle::make('is_active')->label('Actif')->default(true),
             ]);
     }
 

@@ -60,35 +60,29 @@ Dans cPanel → *MySQL Databases* : créez une base + un utilisateur, et notez l
 - Variante `public_html` : placez le contenu de `public/` dans `public_html/` et le reste de
   l'application **au-dessus** de la racine web, puis ajustez les chemins `require` dans `public_html/index.php`.
 
-### 4. Configuration `.env`
+### 4. Installation via l'assistant web (recommandé — façon CMS)
 
-Copiez `.env.example` en `.env` et renseignez :
+1. Copiez `.env.example` en `.env` (un `.env` minimal suffit ; l'assistant écrit le reste).
+2. Générez la clé : `php artisan key:generate` (ou laissez l'assistant le faire si la clé est vide).
+3. Ouvrez **`https://votre-domaine/install`** dans le navigateur. L'assistant :
+   - vérifie les **prérequis** (PHP, extensions, droits d'écriture) ;
+   - demande les **identifiants de base de données** (teste la connexion) ;
+   - crée le **compte administrateur** et le **nom du site** + **Pixel ID** ;
+   - lance **migrations + données de démo**, puis **se verrouille** automatiquement.
 
-```env
-APP_NAME=BePack
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://votre-domaine
+> Tant que l'application n'est pas installée, toutes les URL redirigent vers `/install`.
+> Une fois installée (fichier `storage/installed` créé), l'assistant est désactivé.
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_DATABASE=...
-DB_USERNAME=...
-DB_PASSWORD=...
-```
-
-Puis générez la clé et migrez :
+### 4 bis. Installation manuelle (alternative CLI)
 
 ```bash
+cp .env.example .env
 php artisan key:generate
+# Renseignez DB_* dans .env, puis :
 php artisan migrate --seed --force
 php artisan storage:link
 php artisan config:cache
 ```
-
-> Si l'accès SSH n'est pas disponible, exécutez ces commandes via le *Terminal* cPanel, ou utilisez une
-> tâche planifiée temporaire. (Un assistant d'installation web `/install` est prévu en évolution — voir
-> `docs/03-architecture-technique.md`.)
 
 ### 5. Tâche planifiée (cron)
 

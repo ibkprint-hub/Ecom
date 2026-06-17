@@ -21,3 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Verrou d'installation (propre à chaque déploiement)
+/storage/installed

@@ -41,6 +41,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
             ])
             ->brandName('BePack')
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.svg'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
