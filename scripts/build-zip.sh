@@ -40,6 +40,9 @@ $c=$set($c,"APP_NAME","BePack");
 $c=$set($c,"APP_ENV","production");
 $c=$set($c,"APP_DEBUG","false");
 $c=$set($c,"APP_KEY",$k);
+// Sessions/cache en fichiers : l_assistant /install doit fonctionner AVANT que la base existe.
+$c=$set($c,"SESSION_DRIVER","file");
+$c=$set($c,"CACHE_STORE","file");
 file_put_contents($f,$c);
 ' "$TMP_ENV" "$KEY"
 
