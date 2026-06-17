@@ -83,6 +83,11 @@ class InstallController extends Controller
         $this->bindAsDefault($data);
         Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
 
+        // 4 bis. Lien public/storage -> storage/app/public (designs uploadés, médias).
+        // Certains hébergeurs mutualisés désactivent symlink() : on tente le lien, puis on
+        // se rabat sur une copie du dossier, sans jamais faire échouer l'installation.
+        $this->linkStorage();
+
         // 5. Créer / mettre à jour l'admin et les réglages clés
         User::updateOrCreate(
             ['email' => $data['admin_email']],
@@ -102,6 +107,43 @@ class InstallController extends Controller
     public function complete()
     {
         return view('install.complete');
+    }
+
+    /**
+     * Crée le lien public/storage de façon tolérante aux hébergements mutualisés.
+     * Ne lève jamais d'exception : l'installation ne doit pas échouer pour ça.
+     */
+    private function linkStorage(): void
+    {
+        $link = public_path('storage');
+        $target = storage_path('app/public');
+
+        if (is_link($link) || is_dir($link)) {
+            return;
+        }
+
+        // 1. Voie standard Laravel.
+        try {
+            Artisan::call('storage:link', ['--force' => true]);
+        } catch (\Throwable $e) {
+            // symlink() peut être désactivé : on tente les solutions de repli.
+        }
+
+        if (is_link($link) || is_dir($link)) {
+            return;
+        }
+
+        // 2. Lien symbolique natif.
+        try {
+            @symlink($target, $link);
+        } catch (\Throwable $e) {
+            // ignoré
+        }
+
+        // 3. Dernier repli : un vrai dossier (l'admin pourra créer le lien via Terminal plus tard).
+        if (! is_link($link) && ! is_dir($link)) {
+            @mkdir($link, 0755, true);
+        }
     }
 
     private function applyDbConfig(array $data): void

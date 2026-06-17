@@ -68,7 +68,10 @@ Dans cPanel → *MySQL Databases* : créez une base + un utilisateur, et notez l
    - vérifie les **prérequis** (PHP, extensions, droits d'écriture) ;
    - demande les **identifiants de base de données** (teste la connexion) ;
    - crée le **compte administrateur** et le **nom du site** + **Pixel ID** ;
-   - lance **migrations + données de démo**, puis **se verrouille** automatiquement.
+   - lance **migrations + données de démo** ;
+   - crée le **lien `public/storage`** automatiquement (aucune ligne de commande requise ;
+     repli silencieux si l'hébergeur désactive `symlink()`) ;
+   - puis **se verrouille** automatiquement.
 
 > Tant que l'application n'est pas installée, toutes les URL redirigent vers `/install`.
 > Une fois installée (fichier `storage/installed` créé), l'assistant est désactivé.
