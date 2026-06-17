@@ -1,36 +1,55 @@
-# BePack — Plan du projet
+# BePack — boutique d'emballage personnalisé (print-on-demand)
 
-**BePack** est une plateforme e-commerce de type *print-on-demand* dédiée à l'emballage personnalisé :
-**boîtes en carton, boîtes en papier et sacs en plastique personnalisés**, à destination des **e-commerçants**.
+Plateforme e-commerce **Laravel 11 + Filament** pour la vente de **boîtes en carton, boîtes en papier et
+sacs personnalisés** aux e-commerçants. Configurateur en 4 étapes, devis instantané, **paiement à la
+livraison (COD)**, CMS/dashboard auto-administrable, intégration **Facebook Pixel** et liens d'achat
+traçables pour les publicités.
 
-Le client choisit un produit → une dimension → importe son design (ou commande la création du design) →
-choisit une quantité → renseigne ses coordonnées → **paie à la livraison (COD)**.
+## Démarrage rapide
 
-Le site est un **CMS auto-administrable** (dashboard d'administration), construit en **Laravel**,
-livrable en **archive ZIP** installable sur **hébergement mutualisé**, avec **tout le contenu éditable**
-et l'intégration **Facebook Pixel + liens d'achat pour les publicités**.
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite
+php artisan migrate:fresh --seed
+php artisan storage:link
+npm install && npm run build
+php artisan serve
+```
 
-> ⚠️ Cette phase est **uniquement de la planification**. Aucun code applicatif n'est encore écrit.
+- **Site public** : http://localhost:8000
+- **Admin** : http://localhost:8000/admin — `admin@bepack.dz` / `password`
 
-## Sommaire des documents
+Voir [`INSTALL.md`](INSTALL.md) pour le déploiement sur hébergement mutualisé (ZIP + cPanel).
 
-| Document | Contenu |
-|----------|---------|
-| [`docs/01-vision-perimetre.md`](docs/01-vision-perimetre.md) | Vision, cibles, périmètre fonctionnel, parcours client |
-| [`docs/02-branding.md`](docs/02-branding.md) | Identité BePack : logo, couleurs, typographies, ton |
-| [`docs/03-architecture-technique.md`](docs/03-architecture-technique.md) | Stack Laravel, contraintes mutualisé, packages |
-| [`docs/04-modele-donnees.md`](docs/04-modele-donnees.md) | Entités, relations, configurateur, tarification |
-| [`docs/05-dashboard-cms.md`](docs/05-dashboard-cms.md) | Back-office, édition de contenu, gestion commandes |
-| [`docs/06-marketing-tracking.md`](docs/06-marketing-tracking.md) | Facebook Pixel, Conversions API, catalogue, liens d'achat |
-| [`docs/07-livraison-installation.md`](docs/07-livraison-installation.md) | Livraison COD, transporteurs, livrable ZIP, installation |
-| [`docs/08-roadmap.md`](docs/08-roadmap.md) | Phases, MVP, estimation, décisions à valider |
+## Fonctionnalités (MVP)
 
-## Résumé en une page
+- **Configurateur** (Livewire) : produit → dimension → design (upload ou « faites-moi le design ») →
+  quantité → coordonnées, avec **devis recalculé en direct** et **revalidé côté serveur**.
+- **COD** : commande sans paiement en ligne, statuts de suivi, attribution UTM stockée sur la commande.
+- **Dashboard Filament** : catalogue (familles, produits, dimensions, paliers de prix, options),
+  commandes, frais de livraison par wilaya (58), pages CMS, réglages, statistiques.
+- **Facebook Pixel** : ID éditable dans l'admin, événements `ViewContent` et `Purchase`/`Lead`.
+- **Deep-links pub** : `/c/{produit}?dim=...&qty=...&utm_source=...` pré-remplit le configurateur.
 
-- **Modèle de paiement** : COD (paiement à la livraison) exclusivement.
-- **Cœur du produit** : un configurateur en 4 étapes (produit → dimension → design → quantité).
-- **Deux modes de design** : « J'ai mon design » (upload de fichier) ou « Faites-moi le design » (brief + supplément).
-- **Tarification dégressive** par paliers de quantité, paramétrable par produit/dimension.
-- **Tout éditable** : pages, textes, images, produits, dimensions, prix, frais de livraison, SEO, depuis le dashboard.
-- **Marketing** : Facebook Pixel + API de Conversions, deep-links d'achat traçables pour les publicités.
-- **Déploiement** : compatible hébergement mutualisé (cPanel), livré en ZIP avec assistant d'installation.
+## Architecture
+
+| Couche | Détail |
+|--------|--------|
+| Domaine | `app/Models` — catalogue, commandes, livraison, pages, réglages |
+| Tarification | `app/Services/PricingService.php` (source de vérité serveur) |
+| Configurateur | `app/Livewire/Configurator.php` + `resources/views/livewire/configurator.blade.php` |
+| Public | `app/Http/Controllers/ShopController.php`, `resources/views/shop/*`, `layouts/app.blade.php` |
+| Admin | `app/Filament/Resources/*`, `app/Filament/Pages/ManageSettings.php`, `app/Filament/Widgets/*` |
+| Données démo | `database/seeders/DatabaseSeeder.php` |
+
+## Tests
+
+```bash
+php artisan test --filter=ConfiguratorTest
+```
+
+## Documentation de conception
+
+Le plan complet du projet (vision, branding, architecture, roadmap) est dans [`docs/`](docs/) — voir
+[`docs/00-plan-README.md`](docs/00-plan-README.md).
